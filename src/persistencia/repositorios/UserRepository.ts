@@ -19,8 +19,13 @@ export class UserRepository {
     }
 
     async getAllUsers(): Promise<User[] | null> {
-        const [rows] = await this.connection.execute('SELECT * FROM user');
-        return rows as User[];
+        try {
+            const [rows] = await this.connection.execute('SELECT * FROM user');
+            return rows as User[];
+        } catch (error) {
+            console.error('Error al obtener todos los usuarios:', error);
+            return null; // o lanzar un error
+        }
     }
 
     async getUserById(id: number): Promise<User | null> {
@@ -38,13 +43,21 @@ export class UserRepository {
     }
 
     async createUser(data: any): Promise<User | null> {
-        const [result]: any = await this.connection.execute('INSERT INTO user (name, password, currency, amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [data.name, data.password, data.currency, data.amount]);
+        const [result]: any = await this.connection.execute('INSERT INTO user (name, password, currency, amount) VALUES (?, ?, ?, ?)', [data.name, data.password, data.currency, data.amount]);
         return new User(result.insertId, data.name, data.password, data.currency, data.amount);
     }
 
     async updateUser(id: number, data: any): Promise<User | null> {
-        await this.connection.execute('UPDATE user SET name=?, password=?, currency=?, amount=? WHERE id=?', [data.name, data.password, data.currency, data.amount, id]);
-        return new User(id, data.name, data.password, data.currency, data.amount);
+        try {
+            const [result]: any = await this.connection.execute('UPDATE user SET name=?, password=?, currency=?, amount=? WHERE id=?', [data.name, data.password, data.currency, data.amount, id]);
+            if (result.affectedRows === 0) {
+                return null; // El usuario no fue encontrado
+            }
+            return new User(id, data.name, data.password, data.currency, data.amount);
+        } catch (error) {
+            console.error('Error al actualizar el usuario:', error);
+            return null; // o lanzar un error
+        }
     }
 
     async deleteUser(id: number): Promise<boolean> {

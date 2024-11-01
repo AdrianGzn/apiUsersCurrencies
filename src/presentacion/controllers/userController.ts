@@ -18,8 +18,13 @@ export class UserController {
     async create(req: Request, res: Response) {
         const data = req.body;
         const newUser = await this.userService.createUser(data);
-        res.status(200).send({ status: 'OK', data: newUser });
+        if (newUser) {
+            res.status(201).send({ status: 'OK', data: newUser });
+        } else {
+            res.status(400).send({ status: 'Error', message: 'Error creating user' });
+        }
     }
+    
 
     async update(req: Request, res: Response) {
         const id = parseInt(req.params.id);
