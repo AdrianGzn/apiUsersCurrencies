@@ -30,7 +30,12 @@ export class UserController {
         const id = parseInt(req.params.id);
         const data = req.body;
         const updatedUser = await this.userService.updateUser(id, data);
-        res.status(200).send({ status: 'OK', data: updatedUser });
+        
+        if (updatedUser) {
+            res.status(200).send({ status: 'OK', data: updatedUser });
+        } else {
+            res.status(404).send({ status: 'Error', message: 'User not found' });
+        }
     }
 
     async delete(req: Request, res: Response) {
